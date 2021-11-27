@@ -52,6 +52,24 @@ def momentum_gradient_descent(learning_rate, momentum_rate, num_epochs, cutoff_d
     return x_steps
 
 
+def nesterov_gradient_descent(learning_rate, momentum_rate, num_epochs, cutoff_difference, function, start_point):
+    current_epoch = 0
+    difference = math.inf
+    x = start_point
+    momentum = 0
+    x_steps = [x]
+    while current_epoch < num_epochs and abs(difference) > cutoff_difference:
+        gradient = function.gradient(x - (momentum_rate * momentum))
+        momentum = ((learning_rate * gradient) + (momentum_rate * momentum))
+        new_x = x - momentum
+        difference = x - new_x
+        x = new_x
+        x_steps.append(x)
+        current_epoch += 1
+
+    return x_steps
+
+
 def adagrad_gradient_descent(learning_rate, num_epochs, cutoff_difference, function, start_point):
     current_epoch = 0
     difference = math.inf
@@ -70,5 +88,34 @@ def adagrad_gradient_descent(learning_rate, num_epochs, cutoff_difference, funct
         x = new_x
         x_steps.append(x)
         current_epoch += 1
+
+    return x_steps
+
+
+def adam_gradient_descent(learning_rate, num_epochs, cutoff_difference, function, start_point, gradient_average_rate,
+                          momentum_average_rate):
+    current_epoch = 0
+    difference = math.inf
+    epsilon = 1 * (10 ** -8)
+    gradient_average = 0
+    momentum_average = 0
+    x = start_point
+    x_steps = [x]
+    while current_epoch < num_epochs and abs(difference) > cutoff_difference:
+        current_epoch += 1
+        gradient = function.gradient(x)
+        if current_epoch < 10:
+            new_x = x - (learning_rate * gradient)
+        else:
+            gradient_average = (gradient_average_rate * gradient_average) + ((1 - gradient_average_rate) *
+                                                                             (gradient ** 2))
+            momentum_average = (momentum_average_rate * momentum_average) + ((1 - momentum_average_rate) * gradient)
+            gradient_bias = gradient_average / (1 - (gradient_average_rate ** current_epoch))
+            momentum_bias = momentum_average / (1 - (momentum_average_rate ** current_epoch))
+            new_x = x - ((learning_rate * momentum_bias) / (math.sqrt(gradient_bias) + epsilon))
+
+        difference = x - new_x
+        x = new_x
+        x_steps.append(x)
 
     return x_steps
