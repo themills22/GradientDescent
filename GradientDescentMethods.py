@@ -92,27 +92,26 @@ def adagrad_gradient_descent(learning_rate, num_epochs, cutoff_difference, funct
     return x_steps
 
 
-def adam_gradient_descent(learning_rate, num_epochs, cutoff_difference, function, start_point, gradient_average_rate,
-                          momentum_average_rate):
+def adam_gradient_descent(learning_rate, num_epochs, cutoff_difference, function, start_point, mean_rate,
+                          variance_rate):
     current_epoch = 0
     difference = math.inf
     epsilon = 1 * (10 ** -8)
-    gradient_average = 0
-    momentum_average = 0
+    mean_estimate = 0
+    variance_estimate = 0
     x = start_point
     x_steps = [x]
     while current_epoch < num_epochs and abs(difference) > cutoff_difference:
         current_epoch += 1
         gradient = function.gradient(x)
+        mean_estimate = (mean_rate * mean_estimate) + ((1 - mean_rate) * gradient)
+        variance_estimate = (variance_rate * variance_estimate) + ((1 - variance_rate) * (gradient ** 2))
         if current_epoch < 10:
             new_x = x - (learning_rate * gradient)
         else:
-            gradient_average = (gradient_average_rate * gradient_average) + ((1 - gradient_average_rate) *
-                                                                             (gradient ** 2))
-            momentum_average = (momentum_average_rate * momentum_average) + ((1 - momentum_average_rate) * gradient)
-            gradient_bias = gradient_average / (1 - (gradient_average_rate ** current_epoch))
-            momentum_bias = momentum_average / (1 - (momentum_average_rate ** current_epoch))
-            new_x = x - ((learning_rate * momentum_bias) / (math.sqrt(gradient_bias) + epsilon))
+            mean_bias = mean_estimate / (1 - (mean_rate ** current_epoch))
+            variance_bias = variance_estimate / (1 - (variance_rate ** current_epoch))
+            new_x = x - ((learning_rate * mean_bias) / (math.sqrt(variance_bias) + epsilon))
 
         difference = x - new_x
         x = new_x

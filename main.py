@@ -41,5 +41,5 @@ if __name__ == '__main__':
     MainHelpers.plot_x_steps(x_steps, polynomial_function)
 
     x_steps = Gradient.adam_gradient_descent(learning_rate, num_epochs, cutoff_difference, polynomial_function,
-                                             start_point, 0.999, 0.9)
+                                             start_point, 0.9, 0.999)
     MainHelpers.plot_x_steps(x_steps, polynomial_function)
